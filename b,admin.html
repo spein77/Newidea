@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="sw">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>admin- Biabu Floral Art </title>
+<title> created by spein </title>
+<style>
+body{font-family:Arial;background:#f5f5f5;padding:20px;}
+.container{max-width:800px;margin:0 auto;background:#fff;padding:30px;border-radius:12px;box-shadow:0 5px 20px rgba(0,0,0,0.1);}
+h1{color:#8B0000;margin-bottom:20px;}
+h3{margin-top:25px;color:#333;}
+input,textarea,button{width:100%;padding:12px;margin:10px 0;border:1px solid #ddd;border-radius:8px;font-size:1rem;}
+button{background:#8B0000;color:#fff;border:none;font-weight:700;cursor:pointer;}
+button:hover{background:#6B0000;}
+.item{background:#f9f9f9;padding:15px;border-radius:8px;margin:10px 0;display:flex;gap:15px;align-items:center;}
+.item img{width:80px;height:80px;object-fit:cover;border-radius:8px;}
+.preview{max-width:200px;margin:10px 0;border-radius:8px;}
+.delete{background:#dc3545;}
+.delete:hover{background:#c82333;}
+hr{margin:30px 0;border:none;border-top:1px solid #ddd;}
+.info{background:#e7f3ff;padding:15px;border-radius:8px;margin-bottom:20px;border-left:4px solid #2196F3;}
+label{display:block;margin-top:15px;font-weight:600;color:#555;}
+small{color:#777;font-size:0.85rem;}
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>⚙️ Admin Panel - Biabu Floral Art. created by spein </h1>
+
+  <div class="info">
+    <strong>💡 Tip:</strong> Weka namba ya simu kwa kupiga, na link ya WhatsApp kwa ku-chat. Zote zitaonekana kwenye site.
+  </div>
+
+  <h3>Mipangilio ya Biashara</h3>
+
+  <label>Logo ya Biashara:</label>
+  <input type="file" id="logoUpload" accept="image/*">
+  <img id="logoPreview" class="preview">
+
+  <label>Jina la Biashara:</label>
+  <input type="text" id="bizName" placeholder="Jina la Biashara" value="Biabu Floral Art">
+
+  <label>Namba ya Simu:</label>
+  <input type="text" id="phone" placeholder="0775667472">
+  <small>Mfano: 0775667472. Hii itatumika kupiga simu moja kwa moja</small>
+
+  <label>Link ya WhatsApp:</label>
+  <input type="text" id="whatsappLink" placeholder="https://wa.me/255775667472">
+  <small>Mfano: https://wa.me/255775667472. Tumia link ya namba, sio ya QR</small>
+
+  <label>Mahali Mnapatikana:</label>
+  <input type="text" id="location" placeholder="Morogoro. Kwa sasa" value="Morogoro. Kwa sasa">
+
+  <button onclick="saveSettings()">Hifadhi Mipangilio</button>
+
+  <hr>
+
+  <h3>Ongeza Picha Mpya</h3>
+  <label>Chagua Picha:</label>
+  <input type="file" id="imgUpload" accept="image/*">
+  <img id="imgPreview" class="preview">
+
+  <label>Jina la Piko/Design:</label>
+  <input type="text" id="title" placeholder="Piko ya Kiarabu">
+
+  <label>Maelezo:</label>
+  <textarea id="desc" placeholder="Maelezo mafupi" rows="3"></textarea>
+
+  <label>Bei:</label>
+  <input type="text" id="price" placeholder="45,000">
+  <button onclick="addItem()">Ongeza Kwenye Gallery</button>
+
+  <h3>Picha Zilizopo</h3>
+  <div id="itemsList"></div>
+</div>
+
+<script>
+let data = JSON.parse(localStorage.getItem('biabuData')) || {
+  logo:'',
+  name:'Biabu Floral Art',
+  phone:'',
+  whatsappLink:'',
+  location:'Morogoro. Kwa sasa',
+  items:[]
+};
+
+document.getElementById('logoUpload').onchange = e=>{
+  const file = e.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = ()=>{document.getElementById('logoPreview').src = reader.result; data.logo = reader.result;}
+  reader.readAsDataURL(file);
+};
+
+document.getElementById('imgUpload').onchange = e=>{
+  const file = e.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = ()=>{document.getElementById('imgPreview').src = reader.result;}
+  reader.readAsDataURL(file);
+};
+
+function saveSettings(){
+  data.name = document.getElementById('bizName').value;
+  data.phone = document.getElementById('phone').value;
+  data.whatsappLink = document.getElementById('whatsappLink').value;
+  data.location = document.getElementById('location').value;
+  localStorage.setItem('biabuData',JSON.stringify(data));
+  alert('Mipangilio imehifadhiwa! Fungua index.html uone mabadiliko.');
+}
+
+function addItem(){
+  const item = {
+    img: document.getElementById('imgPreview').src,
+    title: document.getElementById('title').value,
+    desc: document.getElementById('desc').value,
+    price: document.getElementById('price').value
+  };
+  if(!item.img ||!item.title){alert('Tafadhali weka picha na jina');return;}
+  data.items.push(item);
+  localStorage.setItem('biabuData',JSON.stringify(data));
+  loadItems();
+  document.getElementById('title').value='';
+  document.getElementById('desc').value='';
+  document.getElementById('price').value='';
+  document.getElementById('imgPreview').src='';
+  alert('Picha imeongezwa!');
+}
+
+function deleteItem(index){
+  if(confirm('Una uhakika unataka kufuta?')){
+    data.items.splice(index,1);
+    localStorage.setItem('biabuData',JSON.stringify(data));
+    loadItems();
+  }
+}
+
+function loadItems(){
+  const list = document.getElementById('itemsList');
+  list.innerHTML='';
+  if(data.items.length === 0){
+    list.innerHTML = '<p style="color:#999;">Bado hakuna picha</p>';
+    return;
+  }
+  data.items.forEach((item,i)=>{
+    list.innerHTML += `
+      <div class="item">
+        <img src="${item.img}">
+        <div style="flex:1;">
+          <strong>${item.title}</strong><br>
+          <small>${item.desc}</small><br>
+          <strong style="color:#8B0000;">Tsh ${item.price}</strong>
+        </div>
+        <button class="delete" onclick="deleteItem(${i})">Futa</button>
+      </div>
+    `;
+  });
+}
+
+document.getElementById('bizName').value = data.name;
+document.getElementById('phone').value = data.phone;
+document.getElementById('whatsappLink').value = data.whatsappLink;
+document.getElementById('location').value = data.location;
+document.getElementById('logoPreview').src = data.logo;
+loadItems();
+</script>
+</div>
+</body>
+</html>
